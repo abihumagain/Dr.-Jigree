@@ -1,0 +1,28 @@
+# ── Dependencies ─────────────────────────────────────────
+node_modules/
+
+# ── Next.js build output ──────────────────────────────────
+frontend/.next/
+frontend/out/
+
+# ── SQLite database ───────────────────────────────────────
+backend/db/data/db.sqlite
+
+# ── Uploaded files ────────────────────────────────────────
+backend/uploads/
+
+# ── ML model artefact (large binary) ─────────────────────
+ml/model/
+
+# ── Environment files ─────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Logs ──────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── OS files ──────────────────────────────────────────────
+.DS_Store
+Thumbs.db
