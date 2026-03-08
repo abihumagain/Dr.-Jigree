@@ -25,13 +25,13 @@ function StepDots({ step }) {
       {STEPS.map((s, i) => (
         <div key={s} className="flex items-center gap-2">
           <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition-colors
-            ${i < step ? 'bg-blue-600 text-white' : i === step ? 'bg-blue-600 text-white ring-4 ring-blue-100' : 'bg-slate-200 text-slate-500'}`}>
+            ${i < step ? 'bg-brand-500 text-white' : i === step ? 'bg-brand-500 text-white ring-4 ring-brand-500/20' : 'bg-navy-700 text-slate-400'}`}>
             {i < step ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
           </div>
-          {i < STEPS.length - 1 && <div className={`h-0.5 w-8 ${i < step ? 'bg-blue-500' : 'bg-slate-200'}`} />}
+          {i < STEPS.length - 1 && <div className={`h-0.5 w-8 ${i < step ? 'bg-brand-500' : 'bg-navy-600'}`} />}
         </div>
       ))}
-      <span className="ml-3 text-sm font-medium text-slate-600">{STEPS[step]}</span>
+      <span className="ml-3 text-sm font-medium text-slate-300">{STEPS[step]}</span>
     </div>
   );
 }
@@ -48,14 +48,14 @@ function Field({ label, name, type = 'number', form, setForm, hint, min, max }) 
 
 function Toggle({ label, name, form, setForm, description }) {
   return (
-    <div className="flex items-start justify-between gap-4 p-3 rounded-xl bg-slate-50 border border-slate-200">
+    <div className="flex items-start justify-between gap-4 p-3 rounded-xl bg-navy-700 border border-navy-600">
       <div>
-        <p className="font-medium text-sm">{label}</p>
+        <p className="font-medium text-sm text-slate-200">{label}</p>
         {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
       </div>
       <button type="button"
         onClick={() => setForm(f => ({ ...f, [name]: !f[name] }))}
-        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${form[name] ? 'bg-blue-600' : 'bg-slate-300'}`}>
+        className={`relative inline-flex h-6 w-11 shrink-0 rounded-full transition-colors ${form[name] ? 'bg-brand-500' : 'bg-navy-600'}`}>
         <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition mt-0.5 ${form[name] ? 'translate-x-5' : 'translate-x-0.5'}`} />
       </button>
     </div>
@@ -116,15 +116,15 @@ export default function Assessment() {
 
   const reset = () => { setResult(null); setForm(INIT); setStep(0); };
 
-  const riskColor = r => r === 'High' ? 'text-red-600' : r === 'Moderate' ? 'text-yellow-600' : 'text-green-600';
-  const riskBg    = r => r === 'High' ? 'bg-red-50 border-red-200' : r === 'Moderate' ? 'bg-yellow-50 border-yellow-200' : 'bg-green-50 border-green-200';
+  const riskColor = r => r === 'High' ? 'text-red-400' : r === 'Moderate' ? 'text-yellow-400' : 'text-green-400';
+  const riskBg    = r => r === 'High' ? 'bg-red-900/20 border-red-700' : r === 'Moderate' ? 'bg-yellow-900/20 border-yellow-700' : 'bg-green-900/20 border-green-700';
 
   return (
     <Layout title="Health Risk Assessment">
       <div className="max-w-3xl mx-auto">
         <div className="mb-6">
-          <h2 className="text-2xl font-bold text-slate-800">Health Risk Assessment</h2>
-          <p className="text-slate-500 text-sm mt-1">Complete the form to receive your personalised health risk score and recommendations.</p>
+          <h2 className="text-2xl font-bold text-slate-100">Health Risk Assessment</h2>
+          <p className="text-slate-400 text-sm mt-1">Complete the form to receive your personalised health risk score and recommendations.</p>
         </div>
 
         {/* Result view */}
@@ -135,12 +135,12 @@ export default function Assessment() {
                 {result.risk === 'High' ? <AlertTriangle className="w-6 h-6 text-red-500" />
                   : <CheckCircle2 className="w-6 h-6 text-green-500" />}
                 <div>
-                  <p className="text-sm text-slate-500">Your Risk Level</p>
+                  <p className="text-sm text-slate-300">Your Risk Level</p>
                   <p className={`text-3xl font-extrabold ${riskColor(result.risk)}`}>{result.risk} Risk</p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-4xl font-extrabold text-slate-800">{result.score_percent}%</p>
+                <p className="text-4xl font-extrabold text-slate-100">{result.score_percent}%</p>
                 <p className="text-xs text-slate-400">Risk score</p>
               </div>
             </div>
@@ -155,13 +155,13 @@ export default function Assessment() {
 
             {/* Recommendations */}
             <div>
-              <h4 className="font-semibold text-slate-700 mb-3 flex items-center gap-2">
+              <h4 className="font-semibold text-slate-200 mb-3 flex items-center gap-2">
                 <TrendingUp className="w-4 h-4" /> Personalised Recommendations
               </h4>
               <ul className="space-y-2">
                 {(result.recommendations || []).map((r, i) => (
-                  <li key={i} className="flex gap-3 text-sm text-slate-700">
-                    <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-xs font-bold shrink-0">{i+1}</span>
+                  <li key={i} className="flex gap-3 text-sm text-slate-300">
+                    <span className="w-5 h-5 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center text-xs font-bold shrink-0">{i+1}</span>
                     {r}
                   </li>
                 ))}
@@ -222,8 +222,8 @@ export default function Assessment() {
                 <Toggle label="Family History of Heart Disease / Diabetes" name="family_history" form={form} setForm={setForm}
                   description="Do you have a first-degree relative with cardiovascular disease or type 2 diabetes?" />
                 <div>
-                  <label className="label">Stress Level: <span className="font-bold text-blue-600">{form.stress_level}/5</span></label>
-                  <input type="range" min="1" max="5" step="1" className="w-full accent-blue-600"
+                  <label className="label">Stress Level: <span className="font-bold text-brand-400">{form.stress_level}/5</span></label>
+                  <input type="range" min="1" max="5" step="1" className="w-full accent-brand-500"
                     value={form.stress_level} onChange={e => setForm(f => ({...f, stress_level: e.target.value}))} />
                   <div className="flex justify-between text-xs text-slate-400 mt-1">
                     <span>Very low</span><span>Moderate</span><span>Very high</span>
@@ -233,7 +233,7 @@ export default function Assessment() {
             )}
 
             {/* Navigation */}
-            <div className="flex items-center justify-between mt-6 pt-5 border-t border-slate-100">
+            <div className="flex items-center justify-between mt-6 pt-5 border-t border-navy-600">
               <button onClick={back} disabled={step === 0}
                 className="btn-secondary flex items-center gap-2 disabled:opacity-30">
                 <ChevronLeft className="w-4 h-4" /> Back
@@ -257,11 +257,11 @@ export default function Assessment() {
         {/* Assessment history */}
         {history.length > 0 && (
           <div className="card mt-6">
-            <h3 className="font-semibold text-slate-800 mb-4">Assessment History</h3>
+            <h3 className="font-semibold text-slate-100 mb-4">Assessment History</h3>
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 text-xs text-slate-500 uppercase">
+                  <tr className="border-b border-navy-600 text-xs text-slate-400 uppercase">
                     <th className="text-left py-2">Date</th>
                     <th className="text-left py-2">Risk</th>
                     <th className="text-left py-2">Score</th>
@@ -271,8 +271,8 @@ export default function Assessment() {
                 </thead>
                 <tbody>
                   {history.map(h => (
-                    <tr key={h.id} className="border-b border-slate-50 hover:bg-slate-50">
-                      <td className="py-2 text-slate-500">{new Date(h.assessed_at).toLocaleDateString()}</td>
+                    <tr key={h.id} className="border-b border-navy-700/50 hover:bg-navy-700">
+                      <td className="py-2 text-slate-400">{new Date(h.assessed_at).toLocaleDateString()}</td>
                       <td className="py-2">
                         <span className={h.risk_label === 'High' ? 'badge-high' : h.risk_label === 'Moderate' ? 'badge-moderate' : 'badge-low'}>
                           {h.risk_label}

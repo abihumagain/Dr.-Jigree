@@ -14,7 +14,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50">
-      <Loader2 className="w-10 h-10 animate-spin text-blue-500" />
+      <Loader2 className="w-10 h-10 animate-spin text-brand-500" />
     </div>
   );
 }

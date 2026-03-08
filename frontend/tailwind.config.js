@@ -7,22 +7,30 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: {
-          50:  '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          900: '#1e3a8a',
+        navy: {
+          950: '#040d1a',
+          900: '#071428',
+          800: '#0d1f3c',
+          700: '#112844',
+          600: '#163354',
+          500: '#1a3f66',
+          400: '#1e4d7a',
         },
-        teal: {
-          400: '#2dd4bf',
-          500: '#14b8a6',
-          600: '#0d9488',
+        brand: {
+          400: '#38bdf8',
+          500: '#0ea5e9',
+          600: '#0284c7',
+        },
+        accent: {
+          400: '#34d399',
+          500: '#10b981',
         },
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+      },
+      backgroundImage: {
+        'hero-gradient': 'linear-gradient(135deg, #040d1a 0%, #071428 50%, #0d1f3c 100%)',
       },
     },
   },

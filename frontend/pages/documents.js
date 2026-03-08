@@ -62,8 +62,8 @@ export default function Documents() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">Documents</h2>
-            <p className="text-slate-500 text-sm mt-1">Store medical reports, prescriptions and images</p>
+            <h2 className="text-2xl font-bold text-slate-100">Documents</h2>
+            <p className="text-slate-400 text-sm mt-1">Store medical reports, prescriptions and images</p>
           </div>
           <button onClick={() => setModal(true)} className="btn-primary flex items-center gap-2 text-sm">
             <Upload className="w-4 h-4" /> Upload
@@ -74,14 +74,14 @@ export default function Documents() {
         <div className="flex flex-wrap gap-2 mb-5">
           {['all', ...DOC_TYPES].map(t => (
             <button key={t} onClick={() => setFilter(t)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition ${filter === t ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+              className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition ${filter === t ? 'bg-brand-500 text-white' : 'bg-navy-700 border border-navy-600 text-slate-300 hover:bg-navy-600'}`}>
               {t}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>
+          <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-brand-500" /></div>
         ) : shown.length === 0 ? (
           <div className="card text-center py-16">
             <FolderOpen className="w-10 h-10 text-slate-300 mx-auto mb-3" />
@@ -93,17 +93,17 @@ export default function Documents() {
               const Icon = DOC_ICONS[d.doc_type] || FolderOpen;
               return (
                 <div key={d.id} className="card flex items-center gap-4">
-                  <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-blue-600" />
+                  <div className="w-10 h-10 bg-brand-500/20 rounded-xl flex items-center justify-center shrink-0">
+                    <Icon className="w-5 h-5 text-brand-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm truncate">{d.title}</p>
+                    <p className="font-medium text-sm text-slate-200 truncate">{d.title}</p>
                     <p className="text-xs text-slate-400">{d.file_name} · {fmtSize(d.file_size || 0)}</p>
                     <p className="text-xs text-slate-400">{new Date(d.uploaded_at).toLocaleDateString()}</p>
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <a href={d.file_path} target="_blank" rel="noreferrer"
-                      className="text-xs text-blue-600 hover:underline">View</a>
+                      className="text-xs text-brand-400 hover:underline">View</a>
                     <button onClick={() => del(d.id)} className="text-slate-300 hover:text-red-500 transition">
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -118,10 +118,10 @@ export default function Documents() {
       {/* Upload modal */}
       {modal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-            <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <h3 className="font-bold text-slate-800">Upload Document</h3>
-              <button onClick={() => setModal(false)}><X className="w-5 h-5 text-slate-400" /></button>
+          <div className="bg-navy-800 rounded-2xl shadow-xl w-full max-w-md">
+            <div className="flex items-center justify-between p-5 border-b border-navy-600">
+              <h3 className="font-bold text-slate-100">Upload Document</h3>
+              <button onClick={() => setModal(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-200" /></button>
             </div>
             <form onSubmit={upload} className="p-5 space-y-4">
               <div>
@@ -137,7 +137,7 @@ export default function Documents() {
               <div>
                 <label className="label">File *</label>
                 <input type="file" required
-                  className="block w-full text-sm text-slate-500 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  className="block w-full text-sm text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-brand-500/20 file:text-brand-300 hover:file:bg-brand-500/30"
                   onChange={e => setFile(e.target.files[0])} />
                 <p className="text-xs text-slate-400 mt-1">Max 10 MB. PDF, images, DOCX accepted.</p>
               </div>

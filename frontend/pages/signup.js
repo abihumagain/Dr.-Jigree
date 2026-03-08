@@ -35,20 +35,20 @@ export default function Signup() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-teal-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-navy-950 p-4">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-teal-500 flex items-center justify-center shadow-lg mb-3">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-accent-500 flex items-center justify-center shadow-lg shadow-brand-500/30 mb-3">
             <HeartPulse className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800">Dr. Jigree</h1>
-          <p className="text-slate-500 text-sm mt-1">Create your health portfolio</p>
+          <h1 className="text-2xl font-bold text-white">Dr. Jigree</h1>
+          <p className="text-slate-400 text-sm mt-1">Create your health portfolio</p>
         </div>
 
         {/* Card */}
-        <div className="card shadow-md">
-          <h2 className="text-xl font-bold text-slate-800 mb-6">Create an account</h2>
+        <div className="card shadow-xl shadow-black/40">
+          <h2 className="text-xl font-bold text-slate-100 mb-6">Create an account</h2>
           <form onSubmit={submit} className="space-y-4">
             <div>
               <label className="label">Full name</label>
@@ -83,7 +83,7 @@ export default function Signup() {
                   name="password" value={form.password} onChange={handle}
                   placeholder="Min. 8 characters" required />
                 <button type="button" onClick={() => setShowPwd(v => !v)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400">
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
                   {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
@@ -99,9 +99,9 @@ export default function Signup() {
               {loading ? 'Creating account…' : 'Create account'}
             </button>
           </form>
-          <p className="text-center text-sm text-slate-500 mt-5">
+          <p className="text-center text-sm text-slate-400 mt-5">
             Already have an account?{' '}
-            <Link href="/login" className="text-blue-600 font-medium hover:underline">Sign in</Link>
+            <Link href="/login" className="text-brand-400 font-medium hover:underline">Sign in</Link>
           </p>
         </div>
       </div>

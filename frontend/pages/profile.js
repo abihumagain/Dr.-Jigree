@@ -57,7 +57,7 @@ export default function Profile() {
   if (!ready || loading) return (
     <Layout title="My Profile">
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
       </div>
     </Layout>
   );
@@ -67,7 +67,7 @@ export default function Profile() {
   return (
     <Layout title="My Profile">
       <div className="max-w-3xl mx-auto">
-        <h2 className="text-2xl font-bold text-slate-800 mb-6">My Profile</h2>
+        <h2 className="text-2xl font-bold text-slate-100 mb-6">My Profile</h2>
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Avatar + stats */}
@@ -78,24 +78,24 @@ export default function Profile() {
                 {form.profile_picture ? (
                   <img src={form.profile_picture} alt="Profile" className="w-24 h-24 rounded-full object-cover border-4 border-white shadow" />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-3xl font-bold border-4 border-white shadow">
+                  <div className="w-24 h-24 rounded-full bg-brand-500/20 border-2 border-brand-500/40 flex items-center justify-center text-brand-400 text-3xl font-bold shadow">
                     {form.full_name?.charAt(0)?.toUpperCase()}
                   </div>
                 )}
-                <label className="absolute bottom-0 right-0 w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center cursor-pointer shadow hover:bg-blue-700 transition">
+                <label className="absolute bottom-0 right-0 w-8 h-8 bg-brand-500 text-white rounded-full flex items-center justify-center cursor-pointer shadow hover:bg-brand-600 transition">
                   <Camera className="w-4 h-4" />
                   <input type="file" accept="image/*" className="hidden" onChange={uploadPicture} />
                 </label>
               </div>
-              <p className="font-bold text-slate-800">{form.full_name}</p>
-              <p className="text-sm text-slate-500">{form.email}</p>
-              <p className="text-xs text-slate-400 mt-1">Member since {new Date(form.created_at).toLocaleDateString()}</p>
+              <p className="font-bold text-slate-100">{form.full_name}</p>
+              <p className="text-sm text-slate-400">{form.email}</p>
+              <p className="text-xs text-slate-500 mt-1">Member since {new Date(form.created_at).toLocaleDateString()}</p>
             </div>
 
             {/* Health indicators */}
             <div className="card">
-              <h3 className="font-semibold text-slate-700 mb-3 flex items-center gap-2 text-sm">
-                <HeartPulse className="w-4 h-4 text-blue-600" /> Health Indicators
+              <h3 className="font-semibold text-slate-300 mb-3 flex items-center gap-2 text-sm">
+                <HeartPulse className="w-4 h-4 text-brand-400" /> Health Indicators
               </h3>
               {latestRisk ? (
                 <div className="space-y-2">
@@ -114,7 +114,7 @@ export default function Profile() {
           {/* Edit form */}
           <div className="lg:col-span-2">
             <form onSubmit={save} className="card space-y-4">
-              <h3 className="font-semibold text-slate-800 border-b border-slate-100 pb-3 mb-1">Personal Information</h3>
+              <h3 className="font-semibold text-slate-100 border-b border-navy-700 pb-3 mb-1">Personal Information</h3>
               <div>
                 <label className="label">Full name</label>
                 <input className="input" name="full_name" value={form.full_name || ''} onChange={handle} required />

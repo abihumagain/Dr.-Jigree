@@ -68,8 +68,8 @@ export default function Medications() {
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-2xl font-bold text-slate-800">Medications</h2>
-            <p className="text-slate-500 text-sm mt-1">Manage your prescriptions and supplements</p>
+            <h2 className="text-2xl font-bold text-slate-100">Medications</h2>
+            <p className="text-slate-400 text-sm mt-1">Manage your prescriptions and supplements</p>
           </div>
           <button onClick={openAdd} className="btn-primary flex items-center gap-2 text-sm">
             <Plus className="w-4 h-4" /> Add Medication
@@ -80,14 +80,14 @@ export default function Medications() {
         <div className="flex gap-2 mb-5">
           {['active','inactive','all'].map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition ${filter === f ? 'bg-blue-600 text-white' : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+              className={`px-4 py-1.5 rounded-full text-sm font-medium capitalize transition ${filter === f ? 'bg-brand-500 text-white' : 'bg-navy-700 border border-navy-600 text-slate-300 hover:bg-navy-600'}`}>
               {f}
             </button>
           ))}
         </div>
 
         {loading ? (
-          <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-blue-500" /></div>
+          <div className="flex justify-center py-16"><Loader2 className="w-8 h-8 animate-spin text-brand-500" /></div>
         ) : shown.length === 0 ? (
           <div className="card text-center py-16">
             <Pill className="w-10 h-10 text-slate-300 mx-auto mb-3" />
@@ -96,21 +96,21 @@ export default function Medications() {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2">
             {shown.map(m => (
-              <div key={m.id} className={`card border-l-4 ${m.active ? 'border-teal-400' : 'border-slate-300'}`}>
+              <div key={m.id} className={`card border-l-4 ${m.active ? 'border-accent-400' : 'border-navy-600'}`}>
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${m.active ? 'bg-teal-50' : 'bg-slate-100'}`}>
-                      <Pill className={`w-4 h-4 ${m.active ? 'text-teal-600' : 'text-slate-400'}`} />
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${m.active ? 'bg-accent-500/10' : 'bg-navy-700'}`}>
+                      <Pill className={`w-4 h-4 ${m.active ? 'text-accent-400' : 'text-slate-500'}`} />
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-800">{m.name}</p>
-                      <p className="text-xs text-slate-500">{m.dosage} · {m.frequency}</p>
+                      <p className="font-semibold text-slate-100">{m.name}</p>
+                      <p className="text-xs text-slate-400">{m.dosage} · {m.frequency}</p>
                     </div>
                   </div>
                   <div className="flex gap-1 shrink-0">
                     {m.active
-                      ? <CheckCircle2 className="w-4 h-4 text-teal-500 mt-1" />
-                      : <XCircle      className="w-4 h-4 text-slate-300 mt-1" />}
+                      ? <CheckCircle2 className="w-4 h-4 text-accent-400 mt-1" />
+                      : <XCircle      className="w-4 h-4 text-slate-600 mt-1" />}
                   </div>
                 </div>
                 {m.prescriber && <p className="text-xs text-slate-400 mt-2">Prescribed by: {m.prescriber}</p>}
@@ -120,7 +120,7 @@ export default function Medications() {
                   </p>
                 )}
                 {m.notes && <p className="text-xs text-slate-500 mt-1 italic">{m.notes}</p>}
-                <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100">
+                <div className="flex gap-2 mt-3 pt-3 border-t border-navy-600">
                   <button onClick={() => openEdit(m)} className="btn-secondary text-xs flex items-center gap-1 py-1.5 px-3">
                     <Pencil className="w-3 h-3" /> Edit
                   </button>
@@ -137,10 +137,10 @@ export default function Medications() {
       {/* Modal */}
       {modal && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-5 border-b border-slate-100">
-              <h3 className="font-bold text-slate-800">{editing ? 'Edit' : 'Add'} Medication</h3>
-              <button onClick={() => setModal(false)}><X className="w-5 h-5 text-slate-400" /></button>
+          <div className="bg-navy-800 rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-5 border-b border-navy-600">
+              <h3 className="font-bold text-slate-100">{editing ? 'Edit' : 'Add'} Medication</h3>
+              <button onClick={() => setModal(false)}><X className="w-5 h-5 text-slate-400 hover:text-slate-200" /></button>
             </div>
             <form onSubmit={save} className="p-5 space-y-4">
               <div>
@@ -182,7 +182,7 @@ export default function Medications() {
                 <div className="flex items-center gap-3">
                   <label className="label mb-0">Active</label>
                   <button type="button" onClick={() => setForm(f => ({ ...f, active: f.active ? 0 : 1 }))}
-                    className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${form.active ? 'bg-teal-500' : 'bg-slate-300'}`}>
+                    className={`relative inline-flex h-6 w-11 rounded-full transition-colors ${form.active ? 'bg-accent-500' : 'bg-navy-600'}`}>
                     <span className={`inline-block h-5 w-5 mt-0.5 transform rounded-full bg-white shadow transition ${form.active ? 'translate-x-5' : 'translate-x-0.5'}`} />
                   </button>
                 </div>
