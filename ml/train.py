@@ -1,80 +1,116 @@
 """
 Dr. Jigree – ML Model Training
-Run: python train.py
-Replace the synthetic data below with real patient data when available.
-Features: age, height_cm, weight_kg, bmi, smoking, alcohol, exercise_days,
-          systolic_bp, diastolic_bp, glucose, cholesterol, family_history, stress_level
-Label   : 0 = Low/Moderate risk, 1 = High risk
+================================
+Dataset : cardio_train.csv  (70,000 patients, Kaggle Cardiovascular Disease dataset)
+Run     : python train.py
+Output  : ml/model/model.pkl   (GradientBoosting pipeline: StandardScaler + classifier)
+          ml/model/features.json
+
+Feature mapping  cardio_train.csv  →  Dr. Jigree app
+──────────────────────────────────────────────────────
+age (days)  → age_years (float)
+gender      → gender (1=female, 2=male)
+height (cm) → height
+weight (kg) → weight
+bmi         → calculated: weight / (height/100)²
+ap_hi       → systolic_bp
+ap_lo       → diastolic_bp
+cholesterol → 1=normal / 2=above normal / 3=well above normal
+gluc        → 1=normal / 2=above normal / 3=well above normal
+smoke       → smoking (0/1)
+alco        → alcohol (0/1)
+active      → exercise ≥3 days/week = 1, else 0
+pulse_press → ap_hi - ap_lo  (cardiovascular stress proxy)
 """
+
+import os
+import json
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble        import GradientBoostingClassifier
 from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import Pipeline
-from sklearn.metrics import classification_report, confusion_matrix
+from sklearn.preprocessing   import StandardScaler
+from sklearn.pipeline        import Pipeline
+from sklearn.metrics         import classification_report, roc_auc_score
 import joblib
-import os
 
-# ─── Synthetic training data ──────────────────────────────────────────────────
-# Each row: age, height_cm, weight_kg, bmi, smoking, alcohol, exercise_days,
-#           systolic_bp, diastolic_bp, glucose, cholesterol, family_history, stress_level, label
-raw = [
-    # Low risk profiles
-    [25, 172, 68,  23.0, 0, 0, 5, 115, 75, 88,  175, 0, 2, 0],
-    [30, 168, 65,  23.0, 0, 0, 4, 118, 78, 90,  180, 0, 2, 0],
-    [22, 175, 72,  23.5, 0, 0, 6, 110, 70, 85,  160, 0, 1, 0],
-    [35, 165, 60,  22.0, 0, 0, 4, 120, 80, 92,  185, 0, 3, 0],
-    [28, 180, 80,  24.7, 0, 0, 5, 122, 79, 95,  190, 0, 2, 0],
-    [40, 170, 70,  24.2, 0, 0, 3, 125, 82, 98,  195, 0, 3, 0],
-    [33, 178, 76,  24.0, 0, 1, 4, 120, 78, 93,  188, 0, 3, 0],
-    [27, 162, 55,  21.0, 0, 0, 6, 108, 68, 82,  155, 0, 1, 0],
-    # Moderate-border profiles
-    [45, 170, 82,  28.4, 0, 1, 2, 132, 84, 102, 205, 0, 3, 0],
-    [50, 165, 78,  28.7, 0, 0, 2, 128, 83, 105, 200, 1, 4, 0],
-    [38, 175, 90,  29.4, 1, 0, 2, 134, 86, 108, 210, 0, 3, 1],
-    [42, 168, 88,  31.2, 0, 1, 1, 138, 88, 112, 215, 0, 4, 1],
-    # High risk profiles
-    [55, 160, 90,  35.2, 1, 1, 0, 155, 96, 145, 250, 1, 5, 1],
-    [60, 158, 88,  35.3, 1, 0, 0, 160, 100, 160, 260, 1, 4, 1],
-    [65, 165, 95,  34.9, 1, 1, 0, 170, 105, 180, 270, 1, 5, 1],
-    [70, 155, 80,  33.3, 1, 0, 1, 175, 108, 200, 280, 1, 4, 1],
-    [58, 170, 100, 34.6, 1, 1, 0, 165, 102, 155, 255, 1, 5, 1],
-    [52, 162, 92,  35.0, 1, 0, 0, 150, 95, 140, 248, 1, 5, 1],
-    [48, 168, 95,  33.7, 0, 1, 1, 145, 92, 135, 245, 1, 4, 1],
-    [63, 155, 85,  35.4, 1, 1, 0, 178, 110, 190, 290, 1, 5, 1],
-    [56, 172, 98,  33.1, 1, 0, 1, 158, 98, 148, 252, 1, 4, 1],
-    [44, 160, 86,  33.6, 0, 0, 0, 142, 90, 130, 242, 1, 5, 1],
+# ── Paths ──────────────────────────────────────────────────────────────────────
+BASE       = os.path.dirname(os.path.abspath(__file__))
+CSV_PATH   = os.path.join(BASE, 'cardio_train.csv')
+MODEL_DIR  = os.path.join(BASE, 'model')
+MODEL_PATH = os.path.join(MODEL_DIR, 'model.pkl')
+FEAT_PATH  = os.path.join(MODEL_DIR, 'features.json')
+
+# ── Load ───────────────────────────────────────────────────────────────────────
+print("Loading cardio_train.csv …")
+df = pd.read_csv(CSV_PATH, sep=';')
+print(f"  Raw rows : {len(df):,}")
+
+# ── Clean: remove physiologically impossible values ────────────────────────────
+df = df[
+    (df['ap_hi']  > 0)    & (df['ap_hi']  <= 300) &
+    (df['ap_lo']  > 0)    & (df['ap_lo']  <= 200) &
+    (df['ap_hi']  > df['ap_lo'])                   &
+    (df['height'] >= 100) & (df['height'] <= 250)  &
+    (df['weight'] >= 30)  & (df['weight'] <= 250)
+].copy().reset_index(drop=True)
+print(f"  Clean rows: {len(df):,}")
+
+# ── Feature engineering ────────────────────────────────────────────────────────
+df['age_years']      = df['age'] / 365.25
+df['bmi']            = df['weight'] / (df['height'] / 100) ** 2
+df['pulse_pressure'] = df['ap_hi'] - df['ap_lo']
+df.drop(columns=['id', 'age'], inplace=True)
+
+FEATURES = [
+    'age_years', 'gender', 'height', 'weight', 'bmi',
+    'ap_hi', 'ap_lo', 'cholesterol', 'gluc',
+    'smoke', 'alco', 'active', 'pulse_pressure'
 ]
 
-cols = ['age','height_cm','weight_kg','bmi','smoking','alcohol','exercise_days',
-        'systolic_bp','diastolic_bp','glucose','cholesterol','family_history','stress_level']
+X = df[FEATURES]
+y = df['cardio']
 
-df = pd.DataFrame(raw, columns=cols + ['label'])
-X  = df[cols]
-y  = df['label']
+# ── Split ──────────────────────────────────────────────────────────────────────
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.20, random_state=42, stratify=y
+)
+print(f"  Train: {len(X_train):,}  |  Test: {len(X_test):,}")
 
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
-
+# ── Train ──────────────────────────────────────────────────────────────────────
+print("\nTraining GradientBoostingClassifier …")
 pipeline = Pipeline([
     ('scaler', StandardScaler()),
-    ('clf',    GradientBoostingClassifier(n_estimators=200, learning_rate=0.1, max_depth=4, random_state=42))
+    ('clf',    GradientBoostingClassifier(
+        n_estimators=300,
+        learning_rate=0.08,
+        max_depth=5,
+        subsample=0.8,
+        random_state=42,
+        verbose=1
+    ))
 ])
 
 pipeline.fit(X_train, y_train)
 
-y_pred = pipeline.predict(X_test)
-print("Classification Report:")
-print(classification_report(y_test, y_pred, target_names=['Low/Moderate', 'High']))
-print("Confusion Matrix:")
-print(confusion_matrix(y_test, y_pred))
+# ── Evaluate ───────────────────────────────────────────────────────────────────
+y_pred  = pipeline.predict(X_test)
+y_proba = pipeline.predict_proba(X_test)[:, 1]
 
-cv_scores = cross_val_score(pipeline, X, y, cv=3, scoring='accuracy')
-print(f"\nCross-validation accuracy: {cv_scores.mean():.2f} (+/- {cv_scores.std():.2f})")
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred, target_names=['No Disease', 'Disease']))
+print(f"ROC-AUC : {roc_auc_score(y_test, y_proba):.4f}")
 
-os.makedirs(os.path.join(os.path.dirname(__file__), 'model'), exist_ok=True)
-model_path = os.path.join(os.path.dirname(__file__), 'model', 'model.pkl')
-joblib.dump(pipeline, model_path)
-print(f"\n✅  Model saved to {model_path}")
-print("Replace the synthetic data above with real health data for production use.")
+cv = cross_val_score(pipeline, X, y, cv=5, scoring='roc_auc', n_jobs=-1)
+print(f"5-Fold CV ROC-AUC: {cv.mean():.4f} ± {cv.std():.4f}")
+
+# ── Save ───────────────────────────────────────────────────────────────────────
+os.makedirs(MODEL_DIR, exist_ok=True)
+joblib.dump(pipeline, MODEL_PATH)
+with open(FEAT_PATH, 'w') as f:
+    json.dump(FEATURES, f)
+
+print(f"\n✅  Model saved    → {MODEL_PATH}")
+print(f"✅  Features saved → {FEAT_PATH}")
+print("\nRestart the backend — predict.py will automatically load the new model.")
 

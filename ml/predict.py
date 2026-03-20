@@ -2,6 +2,16 @@
 Dr. Jigree – Health Risk Prediction
 Calls trained ML model if available, otherwise uses a comprehensive rule-based engine.
 Outputs JSON to stdout.
+
+Model feature order (must match ml/model/features.json):
+  age_years, gender, height, weight, bmi,
+  ap_hi, ap_lo, cholesterol(cat), gluc(cat),
+  smoke, alco, active, pulse_pressure
+
+Input fields from the app:
+  age (years), height_cm, weight_kg, smoking, alcohol, exercise_days,
+  systolic_bp, diastolic_bp, glucose (mg/dL), cholesterol (mg/dL),
+  family_history, stress_level
 """
 import sys
 import json
@@ -30,15 +40,38 @@ alcohol       = 1 if raw.get('alcohol') else 0
 exercise_days = g('exercise_days', 0)
 systolic_bp   = g('systolic_bp', 120)
 diastolic_bp  = g('diastolic_bp', 80)
-glucose       = g('glucose', 90)
-cholesterol   = g('cholesterol', 180)
+glucose       = g('glucose', 90)          # mg/dL (app input)
+cholesterol   = g('cholesterol', 180)     # mg/dL (app input)
 family_history = 1 if raw.get('family_history') else 0
-stress_level  = g('stress_level', 3)   # 1-5
+stress_level  = g('stress_level', 3)      # 1–5 (rule-based only)
 
 bmi = weight_kg / ((height_cm / 100) ** 2) if height_cm > 0 else 25.0
 
+# ─── Feature conversion helpers ───────────────────────────────────────────────
+def chol_to_cat(mg_dl):
+    """Convert cholesterol mg/dL → training categorical (1/2/3)."""
+    if mg_dl < 200: return 1   # normal
+    if mg_dl < 240: return 2   # above normal
+    return 3                   # well above normal
+
+def gluc_to_cat(mg_dl):
+    """Convert fasting glucose mg/dL → training categorical (1/2/3)."""
+    if mg_dl < 100: return 1   # normal
+    if mg_dl < 126: return 2   # pre-diabetic / above normal
+    return 3                   # diabetic / well above normal
+
+# active: ≥3 exercise days/week mirrors the dataset definition
+active         = 1 if exercise_days >= 3 else 0
+pulse_pressure = systolic_bp - diastolic_bp
+chol_cat       = chol_to_cat(cholesterol)
+gluc_cat       = gluc_to_cat(glucose)
+# gender not collected at signup — default to 1 (female) which is the majority
+# class in the dataset; has minor impact on the population-level model
+gender_default = 1
+
 # ─── Try ML model first ───────────────────────────────────────────────────────
 model_path = os.path.join(os.path.dirname(__file__), 'model', 'model.pkl')
+feat_path  = os.path.join(os.path.dirname(__file__), 'model', 'features.json')
 ml_used    = False
 ml_risk    = None
 ml_score   = None
@@ -48,14 +81,32 @@ if os.path.exists(model_path):
         import joblib
         import numpy as np
         model = joblib.load(model_path)
-        X = np.array([[age, height_cm, weight_kg, bmi, smoking, alcohol,
-                       exercise_days, systolic_bp, diastolic_bp, glucose,
-                       cholesterol, family_history, stress_level]])
-        pred      = model.predict(X)[0]
-        proba     = model.predict_proba(X)[0]
-        ml_score  = float(proba[int(pred)])
-        ml_risk   = 'High' if int(pred) == 1 else ('Moderate' if ml_score < 0.75 else 'Low')
-        ml_used   = True
+
+        # Build feature vector in the exact order saved in features.json
+        # ['age_years','gender','height','weight','bmi',
+        #  'ap_hi','ap_lo','cholesterol','gluc',
+        #  'smoke','alco','active','pulse_pressure']
+        X = np.array([[
+            age,             # age_years  (app sends years directly)
+            gender_default,  # gender     (1=female, not collected in app)
+            height_cm,       # height     (cm)
+            weight_kg,       # weight     (kg)
+            bmi,             # bmi
+            systolic_bp,     # ap_hi
+            diastolic_bp,    # ap_lo
+            chol_cat,        # cholesterol  (1/2/3 categorical)
+            gluc_cat,        # gluc         (1/2/3 categorical)
+            smoking,         # smoke
+            alcohol,         # alco
+            active,          # active       (binary: ≥3 days/wk)
+            pulse_pressure   # pulse_pressure = ap_hi - ap_lo
+        ]])
+
+        pred     = model.predict(X)[0]
+        proba    = model.predict_proba(X)[0]
+        # proba[1] = probability of cardiovascular disease
+        ml_score = float(proba[1])
+        ml_used  = True
     except Exception:
         ml_used = False
 
@@ -103,12 +154,14 @@ def rule_score():
 
     return max(0.0, score)
 
-raw_score = rule_score()
-max_score = 25.0
+raw_score  = rule_score()
+max_score  = 25.0
 normalised = min(raw_score / max_score, 1.0)
 
+# ml_score is proba[1] = P(cardiovascular disease) ∈ [0, 1]
+# Blend: weight ML more heavily when the trained model is available
 if ml_used:
-    final_score = 0.6 * ml_score + 0.4 * normalised
+    final_score = 0.65 * ml_score + 0.35 * normalised
 else:
     final_score = normalised
 
@@ -172,13 +225,14 @@ output = {
     "bmi":             round(bmi, 1),
     "bmi_category":    ("Underweight" if bmi < 18.5 else "Normal" if bmi < 25 else "Overweight" if bmi < 30 else "Obese"),
     "ml_model_used":   ml_used,
+    "ml_disease_prob": round(ml_score * 100, 1) if ml_used else None,
     "recommendations": recommendations,
     "indicators": {
-        "blood_pressure": "High"     if systolic_bp >= 140 else "Elevated" if systolic_bp >= 130 else "Normal",
-        "glucose":        "High"     if glucose >= 126     else "Elevated"  if glucose >= 100   else "Normal",
-        "cholesterol":    "High"     if cholesterol >= 240 else "Borderline" if cholesterol >= 200 else "Normal",
-        "bmi_status":     "Obese"    if bmi >= 30          else "Overweight" if bmi >= 25       else "Normal",
-        "lifestyle":      "Poor"     if (smoking or alcohol or exercise_days <= 1) else "Fair" if exercise_days < 4 else "Good"
+        "blood_pressure": "High"      if systolic_bp >= 140 else "Elevated"  if systolic_bp >= 130 else "Normal",
+        "glucose":        "High"      if glucose >= 126      else "Elevated"  if glucose >= 100    else "Normal",
+        "cholesterol":    "High"      if cholesterol >= 240  else "Borderline" if cholesterol >= 200 else "Normal",
+        "bmi_status":     "Obese"     if bmi >= 30           else "Overweight" if bmi >= 25        else "Normal",
+        "lifestyle":      "Poor"      if (smoking or alcohol or exercise_days <= 1) else "Fair" if exercise_days < 4 else "Good"
     }
 }
 
