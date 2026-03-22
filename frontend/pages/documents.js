@@ -1,60 +1,13 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
-import toast from 'react-hot-toast';
+import { useDocuments } from '@/controllers/useDocuments';
 import { Upload, Trash2, X, Loader2, FolderOpen, FileText, Image, FilePlus2 } from 'lucide-react';
 
 const DOC_TYPES = ['report', 'prescription', 'image', 'other'];
 const DOC_ICONS = { report: FileText, prescription: FilePlus2, image: Image, other: FolderOpen };
 
 export default function Documents() {
-  const { user, ready } = useAuth();
-  const router = useRouter();
-  const [docs, setDocs]       = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal]     = useState(false);
-  const [file, setFile]       = useState(null);
-  const [docType, setDocType] = useState('report');
-  const [title, setTitle]     = useState('');
-  const [uploading, setUploading] = useState(false);
-  const [filter, setFilter]   = useState('all');
+  const { docs, loading, modal, setModal, file, setFile, docType, setDocType, title, setTitle, uploading, filter, setFilter, upload, del, shown } = useDocuments();
 
-  useEffect(() => {
-    if (!ready) return;
-    if (!user) { router.push('/login'); return; }
-    load();
-  }, [ready, user]);
-
-  const load = () => api.get('/documents').then(r => setDocs(r.data)).finally(() => setLoading(false));
-
-  const upload = async e => {
-    e.preventDefault();
-    if (!file) return;
-    setUploading(true);
-    const fd = new FormData();
-    fd.append('file', file);
-    fd.append('doc_type', docType);
-    fd.append('title', title || file.name);
-    try {
-      await api.post('/documents', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      await load();
-      setModal(false);
-      setFile(null); setTitle(''); setDocType('report');
-      toast.success('Document uploaded');
-    } catch { toast.error('Upload failed'); }
-    finally { setUploading(false); }
-  };
-
-  const del = async id => {
-    if (!confirm('Delete this document?')) return;
-    await api.delete(`/documents/${id}`);
-    setDocs(ds => ds.filter(d => d.id !== id));
-    toast.success('Deleted');
-  };
-
-  const shown = filter === 'all' ? docs : docs.filter(d => d.doc_type === filter);
   const fmtSize = b => b > 1024*1024 ? `${(b/1024/1024).toFixed(1)} MB` : `${(b/1024).toFixed(0)} KB`;
 
   return (

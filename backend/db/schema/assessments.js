@@ -1,0 +1,22 @@
+module.exports = `CREATE TABLE IF NOT EXISTS risk_assessments (
+  id             INTEGER  PRIMARY KEY AUTOINCREMENT,
+  user_id        INTEGER  NOT NULL,
+  age            INTEGER,
+  height_cm      REAL,
+  weight_kg      REAL,
+  bmi            REAL,
+  smoking        INTEGER,
+  alcohol        INTEGER,
+  exercise_days  INTEGER,
+  systolic_bp    REAL,
+  diastolic_bp   REAL,
+  glucose        REAL,
+  cholesterol    REAL,
+  family_history INTEGER,
+  stress_level   INTEGER,
+  risk_score     REAL,
+  risk_label     TEXT,
+  recommendations TEXT,
+  assessed_at    DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+)`;

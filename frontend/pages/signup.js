@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
+import { signupUser } from '@/services/authService';
 import toast from 'react-hot-toast';
 import { HeartPulse, Eye, EyeOff, Loader2 } from 'lucide-react';
 
@@ -24,7 +24,7 @@ export default function Signup() {
     setLoading(true);
     try {
       const { full_name, email, password, date_of_birth, gender } = form;
-      const { data } = await api.post('/auth/signup', { full_name, email, password, date_of_birth, gender });
+      const data = await signupUser({ full_name, email, password, date_of_birth, gender });
       login(data.token, data.user);
       toast.success('Account created! Welcome to Dr. Jigree 🎉');
     } catch (err) {

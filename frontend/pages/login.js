@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
+import { loginUser } from '@/services/authService';
 import toast from 'react-hot-toast';
 import { HeartPulse, Eye, EyeOff, Loader2 } from 'lucide-react';
 
@@ -17,7 +17,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data } = await api.post('/auth/login', form);
+      const data = await loginUser(form);
       login(data.token, data.user);
       toast.success(`Welcome back, ${data.user.full_name}!`);
     } catch (err) {

@@ -1,23 +1,9 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
-import toast from 'react-hot-toast';
+import { useAssessment, STEPS } from '@/controllers/useAssessment';
 import {
   ChevronRight, ChevronLeft, Loader2, CheckCircle2, AlertTriangle,
   Activity, TrendingUp, Info, RefreshCw
 } from 'lucide-react';
-
-const STEPS = ['Body Metrics', 'Vitals', 'Lifestyle', 'Family & Stress'];
-
-const INIT = {
-  age: '', height_cm: '', weight_kg: '',
-  systolic_bp: '', diastolic_bp: '',
-  glucose: '', cholesterol: '',
-  smoking: false, alcohol: false, exercise_days: '',
-  family_history: false, stress_level: 3,
-};
 
 function StepDots({ step }) {
   return (
@@ -36,11 +22,11 @@ function StepDots({ step }) {
   );
 }
 
-function Field({ label, name, type = 'number', form, setForm, hint, min, max }) {
+function Field({ label, name, type = 'number', form, setForm, hint, min, max, placeholder }) {
   return (
     <div>
       <label className="label">{label}{hint && <span className="text-slate-400 font-normal ml-1">({hint})</span>}</label>
-      <input className="input" type={type} name={name} min={min} max={max}
+      <input className="input" type={type} name={name} min={min} max={max} placeholder={placeholder}
         value={form[name]} onChange={e => setForm(f => ({ ...f, [name]: e.target.value }))} />
     </div>
   );
@@ -70,51 +56,7 @@ function IndicatorBadge({ label, status }) {
 }
 
 export default function Assessment() {
-  const { user, ready } = useAuth();
-  const router = useRouter();
-  const [step, setStep]     = useState(0);
-  const [form, setForm]     = useState(INIT);
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState(null);
-  const [history, setHistory] = useState([]);
-
-  useEffect(() => {
-    if (!ready) return;
-    if (!user) { router.push('/login'); return; }
-    api.get('/assessments').then(r => setHistory(r.data)).catch(() => {});
-  }, [ready, user]);
-
-  const next = () => setStep(s => Math.min(s + 1, STEPS.length - 1));
-  const back = () => setStep(s => Math.max(s - 1, 0));
-
-  const submit = async () => {
-    setLoading(true);
-    try {
-      const payload = {
-        ...form,
-        age:           Number(form.age),
-        height_cm:     Number(form.height_cm),
-        weight_kg:     Number(form.weight_kg),
-        systolic_bp:   Number(form.systolic_bp) || undefined,
-        diastolic_bp:  Number(form.diastolic_bp) || undefined,
-        glucose:       Number(form.glucose) || undefined,
-        cholesterol:   Number(form.cholesterol) || undefined,
-        exercise_days: Number(form.exercise_days),
-        stress_level:  Number(form.stress_level),
-      };
-      const { data } = await api.post('/assess', payload);
-      setResult(data);
-      const hist = await api.get('/assessments');
-      setHistory(hist.data);
-      toast.success('Assessment complete!');
-    } catch (err) {
-      toast.error(err?.response?.data?.error || 'Assessment failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const reset = () => { setResult(null); setForm(INIT); setStep(0); };
+  const { step, form, setForm, loading, result, history, next, back, submit, reset } = useAssessment();
 
   const riskColor = r => r === 'High' ? 'text-red-400' : r === 'Moderate' ? 'text-yellow-400' : 'text-green-400';
   const riskBg    = r => r === 'High' ? 'bg-red-900/20 border-red-700' : r === 'Moderate' ? 'bg-yellow-900/20 border-yellow-700' : 'bg-green-900/20 border-green-700';
@@ -187,18 +129,18 @@ export default function Assessment() {
 
             {step === 0 && (
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Field label="Age" name="age" form={form} setForm={setForm} hint="years" min="1" max="120" />
-                <Field label="Height" name="height_cm" form={form} setForm={setForm} hint="cm" min="50" max="250" />
-                <Field label="Weight" name="weight_kg" form={form} setForm={setForm} hint="kg" min="10" max="300" />
+                <Field label="Age" name="age" form={form} setForm={setForm} hint="years" min="1" max="120" placeholder="e.g. 35" />
+                <Field label="Height" name="height_cm" form={form} setForm={setForm} hint="cm" min="50" max="250" placeholder="avg. 170" />
+                <Field label="Weight" name="weight_kg" form={form} setForm={setForm} hint="kg" min="10" max="300" placeholder="avg. 70" />
               </div>
             )}
 
             {step === 1 && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <Field label="Systolic Blood Pressure" name="systolic_bp" form={form} setForm={setForm} hint="mmHg" min="60" max="260" />
-                <Field label="Diastolic Blood Pressure" name="diastolic_bp" form={form} setForm={setForm} hint="mmHg" min="40" max="160" />
-                <Field label="Fasting Glucose" name="glucose" form={form} setForm={setForm} hint="mg/dL" min="40" max="600" />
-                <Field label="Total Cholesterol" name="cholesterol" form={form} setForm={setForm} hint="mg/dL" min="50" max="500" />
+                <Field label="Systolic Blood Pressure" name="systolic_bp" form={form} setForm={setForm} hint="mmHg" min="60" max="260" placeholder="avg. 120" />
+                <Field label="Diastolic Blood Pressure" name="diastolic_bp" form={form} setForm={setForm} hint="mmHg" min="40" max="160" placeholder="avg. 80" />
+                <Field label="Fasting Glucose" name="glucose" form={form} setForm={setForm} hint="mg/dL" min="40" max="600" placeholder="avg. 90" />
+                <Field label="Total Cholesterol" name="cholesterol" form={form} setForm={setForm} hint="mg/dL" min="50" max="500" placeholder="avg. 190" />
               </div>
             )}
 
@@ -210,7 +152,7 @@ export default function Assessment() {
                   description="Do you drink alcohol more than the recommended guidelines?" />
                 <div>
                   <label className="label">Exercise days per week</label>
-                  <input className="input" type="number" name="exercise_days" min="0" max="7"
+                  <input className="input" type="number" name="exercise_days" min="0" max="7" placeholder="avg. 3–4 days"
                     value={form.exercise_days} onChange={e => setForm(f => ({...f, exercise_days: e.target.value}))} />
                   <p className="text-xs text-slate-400 mt-1">Number of days you do at least 30 minutes of moderate exercise</p>
                 </div>

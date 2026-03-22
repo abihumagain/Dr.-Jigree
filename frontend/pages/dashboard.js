@@ -1,9 +1,6 @@
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/router';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
+import { useDashboard } from '@/controllers/useDashboard';
 import {
   Activity, Pill, CalendarClock, ClipboardList,
   TrendingUp, AlertTriangle, CheckCircle, ChevronRight, Plus
@@ -50,18 +47,9 @@ function StatCard({ icon: Icon, label, value, color, href }) {
 }
 
 export default function Dashboard() {
-  const { user, ready } = useAuth();
-  const router = useRouter();
-  const [data, setData]     = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data, loading, user } = useDashboard();
 
-  useEffect(() => {
-    if (!ready) return;
-    if (!user) { router.push('/login'); return; }
-    api.get('/dashboard').then(r => setData(r.data)).finally(() => setLoading(false));
-  }, [ready, user]);
-
-  if (!ready || loading) return (
+  if (loading) return (
     <Layout title="Dashboard">
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
@@ -79,7 +67,6 @@ export default function Dashboard() {
           Good day, {user?.full_name?.split(' ')[0]} 👋
         </h2>
         <p className="text-slate-400 text-sm mt-1">Here&apos;s your health summary</p>
-        <p className="text-slate-500 text-sm mt-1">Here&apos;s your health summary</p>
       </div>
 
       {/* Risk + Stats grid */}

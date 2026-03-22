@@ -1,60 +1,13 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
-import toast from 'react-hot-toast';
-import { Loader2, User, Camera, Save, HeartPulse } from 'lucide-react';
+import { useProfile } from '@/controllers/useProfile';
+import { Loader2, Camera, Save, HeartPulse } from 'lucide-react';
 
 const BLOOD_TYPES = ['A+','A-','B+','B-','O+','O-','AB+','AB-'];
 
 export default function Profile() {
-  const { user, ready, updateUser } = useAuth();
-  const router = useRouter();
-  const [form, setForm]     = useState({});
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [stats, setStats]   = useState(null);
+  const { form, loading, saving, stats, handle, save, changePicture } = useProfile();
 
-  useEffect(() => {
-    if (!ready) return;
-    if (!user) { router.push('/login'); return; }
-    Promise.all([
-      api.get('/profile'),
-      api.get('/dashboard')
-    ]).then(([p, d]) => {
-      setForm(p.data);
-      setStats(d.data);
-    }).finally(() => setLoading(false));
-  }, [ready, user]);
-
-  const handle = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
-
-  const save = async e => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      const { data } = await api.put('/profile', form);
-      updateUser(data);
-      toast.success('Profile updated');
-    } catch { toast.error('Failed to save'); }
-    finally { setSaving(false); }
-  };
-
-  const uploadPicture = async e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    const fd = new FormData();
-    fd.append('picture', file);
-    try {
-      const { data } = await api.post('/profile/picture', fd, { headers: { 'Content-Type': 'multipart/form-data' } });
-      setForm(f => ({ ...f, profile_picture: data.profile_picture }));
-      updateUser({ ...user, profile_picture: data.profile_picture });
-      toast.success('Profile picture updated');
-    } catch { toast.error('Upload failed'); }
-  };
-
-  if (!ready || loading) return (
+  if (loading) return (
     <Layout title="My Profile">
       <div className="flex items-center justify-center h-64">
         <Loader2 className="w-8 h-8 animate-spin text-brand-500" />
@@ -72,7 +25,6 @@ export default function Profile() {
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Avatar + stats */}
           <div className="space-y-4">
-            {/* Avatar */}
             <div className="card flex flex-col items-center text-center">
               <div className="relative mb-4">
                 {form.profile_picture ? (
@@ -84,7 +36,7 @@ export default function Profile() {
                 )}
                 <label className="absolute bottom-0 right-0 w-8 h-8 bg-brand-500 text-white rounded-full flex items-center justify-center cursor-pointer shadow hover:bg-brand-600 transition">
                   <Camera className="w-4 h-4" />
-                  <input type="file" accept="image/*" className="hidden" onChange={uploadPicture} />
+                  <input type="file" accept="image/*" className="hidden" onChange={changePicture} />
                 </label>
               </div>
               <p className="font-bold text-slate-100">{form.full_name}</p>
@@ -92,7 +44,6 @@ export default function Profile() {
               <p className="text-xs text-slate-500 mt-1">Member since {new Date(form.created_at).toLocaleDateString()}</p>
             </div>
 
-            {/* Health indicators */}
             <div className="card">
               <h3 className="font-semibold text-slate-300 mb-3 flex items-center gap-2 text-sm">
                 <HeartPulse className="w-4 h-4 text-brand-400" /> Health Indicators
@@ -101,7 +52,7 @@ export default function Profile() {
                 <div className="space-y-2">
                   <Row label="Risk Level" value={latestRisk.risk_label}
                     cls={latestRisk.risk_label === 'High' ? 'text-red-600 font-bold' : latestRisk.risk_label === 'Moderate' ? 'text-yellow-600 font-bold' : 'text-green-600 font-bold'} />
-                  <Row label="Risk Score" value={latestRisk.risk_score ? Math.round(latestRisk.risk_score*100)+'%' : '—'} />
+                  <Row label="Risk Score" value={latestRisk.risk_score ? Math.round(latestRisk.risk_score * 100) + '%' : '—'} />
                   {latestRisk.bmi && <Row label="BMI" value={latestRisk.bmi} />}
                   {latestRisk.systolic_bp && <Row label="Blood Pressure" value={`${latestRisk.systolic_bp}/${latestRisk.diastolic_bp} mmHg`} />}
                 </div>
@@ -172,3 +123,4 @@ function Row({ label, value, cls = 'text-slate-700' }) {
     </div>
   );
 }
+

@@ -1,67 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
-import toast from 'react-hot-toast';
+import { useMedications } from '@/controllers/useMedications';
 import { Plus, Trash2, Pencil, X, Loader2, Pill, CheckCircle2, XCircle } from 'lucide-react';
 
-const EMPTY = { name: '', dosage: '', frequency: '', start_date: '', end_date: '', prescriber: '', notes: '', active: 1 };
-const FREQ   = ['Once daily', 'Twice daily', 'Three times daily', 'Every 8 hours', 'Every 12 hours', 'Weekly', 'As needed', 'Other'];
+const FREQ = ['Once daily', 'Twice daily', 'Three times daily', 'Every 8 hours', 'Every 12 hours', 'Weekly', 'As needed', 'Other'];
 
 export default function Medications() {
-  const { user, ready } = useAuth();
-  const router = useRouter();
-  const [meds, setMeds]     = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [modal, setModal]   = useState(false);
-  const [editing, setEditing] = useState(null);
-  const [form, setForm]     = useState(EMPTY);
-  const [saving, setSaving] = useState(false);
-  const [filter, setFilter] = useState('active');
-
-  useEffect(() => {
-    if (!ready) return;
-    if (!user) { router.push('/login'); return; }
-    load();
-  }, [ready, user]);
-
-  const load = () => api.get('/medications').then(r => setMeds(r.data)).finally(() => setLoading(false));
-
-  const openAdd  = () => { setEditing(null); setForm({ ...EMPTY }); setModal(true); };
-  const openEdit = m  => { setEditing(m.id); setForm({ ...m }); setModal(true); };
-
-  const handle = e => {
-    const { name, value } = e.target;
-    setForm(f => ({ ...f, [name]: value }));
-  };
-
-  const save = async e => {
-    e.preventDefault();
-    setSaving(true);
-    try {
-      if (editing) {
-        const { data } = await api.put(`/medications/${editing}`, form);
-        setMeds(ms => ms.map(m => m.id === editing ? data : m));
-        toast.success('Medication updated');
-      } else {
-        const { data } = await api.post('/medications', form);
-        setMeds(ms => [data, ...ms]);
-        toast.success('Medication added');
-      }
-      setModal(false);
-    } catch { toast.error('Failed to save'); }
-    finally { setSaving(false); }
-  };
-
-  const del = async id => {
-    if (!confirm('Remove this medication?')) return;
-    await api.delete(`/medications/${id}`);
-    setMeds(ms => ms.filter(m => m.id !== id));
-    toast.success('Removed');
-  };
-
-  const shown = filter === 'active' ? meds.filter(m => m.active) : filter === 'inactive' ? meds.filter(m => !m.active) : meds;
+  const { meds, loading, modal, setModal, editing, form, setForm, saving, filter, setFilter, openAdd, openEdit, handle, save, del, shown } = useMedications();
 
   return (
     <Layout title="Medications">

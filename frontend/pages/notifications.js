@@ -1,9 +1,5 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import Layout from '@/components/Layout';
-import { useAuth } from '@/context/AuthContext';
-import api from '@/lib/api';
-import toast from 'react-hot-toast';
+import { useNotifications } from '@/controllers/useNotifications';
 import { Bell, CheckCheck, Info, AlertTriangle, CheckCircle2, Gift } from 'lucide-react';
 
 const TYPE_ICONS = {
@@ -26,29 +22,7 @@ const ICON_COLORS = {
 };
 
 export default function Notifications() {
-  const { user, ready } = useAuth();
-  const router = useRouter();
-  const [notifs, setNotifs] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!ready) return;
-    if (!user) { router.push('/login'); return; }
-    api.get('/notifications').then(r => setNotifs(r.data)).finally(() => setLoading(false));
-  }, [ready, user]);
-
-  const markRead = async id => {
-    await api.put(`/notifications/${id}/read`);
-    setNotifs(ns => ns.map(n => n.id === id ? { ...n, read: 1 } : n));
-  };
-
-  const markAll = async () => {
-    await api.put('/notifications/read-all');
-    setNotifs(ns => ns.map(n => ({ ...n, read: 1 })));
-    toast.success('All marked as read');
-  };
-
-  const unread = notifs.filter(n => !n.read).length;
+  const { notifs, loading, unread, read, readAll } = useNotifications();
 
   return (
     <Layout title="Notifications">
@@ -59,7 +33,7 @@ export default function Notifications() {
             {unread > 0 && <p className="text-sm text-slate-400 mt-1">{unread} unread</p>}
           </div>
           {unread > 0 && (
-            <button onClick={markAll} className="btn-secondary text-sm flex items-center gap-2">
+            <button onClick={readAll} className="btn-secondary text-sm flex items-center gap-2">
               <CheckCheck className="w-4 h-4" /> Mark all read
             </button>
           )}
@@ -77,12 +51,12 @@ export default function Notifications() {
         ) : (
           <div className="space-y-3">
             {notifs.map(n => {
-              const Icon  = TYPE_ICONS[n.type] || Info;
-              const bg    = TYPE_COLORS[n.type] || TYPE_COLORS.info;
-              const icol  = ICON_COLORS[n.type] || ICON_COLORS.info;
+              const Icon = TYPE_ICONS[n.type] || Info;
+              const bg   = TYPE_COLORS[n.type] || TYPE_COLORS.info;
+              const icol = ICON_COLORS[n.type] || ICON_COLORS.info;
               return (
                 <div key={n.id}
-                  onClick={() => !n.read && markRead(n.id)}
+                  onClick={() => !n.read && read(n.id)}
                   className={`card border cursor-pointer transition-all ${bg} ${!n.read ? 'shadow-sm' : 'opacity-60'}`}>
                   <div className="flex items-start gap-3">
                     <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${icol}`} />

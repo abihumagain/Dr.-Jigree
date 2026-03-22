@@ -1,0 +1,20 @@
+module.exports = `CREATE TABLE IF NOT EXISTS health_records (
+  id            INTEGER  PRIMARY KEY AUTOINCREMENT,
+  user_id       INTEGER  NOT NULL,
+  record_type   TEXT     NOT NULL,
+  title         TEXT     NOT NULL,
+  systolic_bp   REAL,
+  diastolic_bp  REAL,
+  heart_rate    INTEGER,
+  temperature   REAL,
+  oxygen_sat    REAL,
+  glucose       REAL,
+  cholesterol   REAL,
+  hdl           REAL,
+  ldl           REAL,
+  triglycerides REAL,
+  hba1c         REAL,
+  notes         TEXT,
+  recorded_at   DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+)`;
