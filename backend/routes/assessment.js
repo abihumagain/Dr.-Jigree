@@ -6,7 +6,52 @@ const auth        = require('../middleware/auth');
 
 const router = express.Router();
 
-// POST /api/assess  — run ML prediction and persist result
+// GET /api/assess/model-status  — diagnostic: verify model can be loaded
+router.get('/model-status', auth, (req, res) => {
+  const pyPath    = path.join(__dirname, '..', '..', 'ml', 'predict.py');
+  const modelPath = path.join(__dirname, '..', '..', 'ml', 'model', 'model.pkl');
+  const featPath  = path.join(__dirname, '..', '..', 'ml', 'model', 'features.json');
+  const fs = require('fs');
+
+  const modelExists = fs.existsSync(modelPath);
+  const featExists  = fs.existsSync(featPath);
+
+  if (!modelExists) {
+    return res.json({ status: 'missing', message: 'model.pkl not found — run ml/train.py first', modelExists, featExists });
+  }
+
+  // Try a minimal prediction to confirm joblib can load the model
+  const testInput = JSON.stringify({
+    age: 35, height_cm: 170, weight_kg: 70,
+    systolic_bp: 120, diastolic_bp: 80,
+    glucose: 90, cholesterol: 190,
+    smoking: false, alcohol: false, exercise_days: 3,
+    family_history: false, stress_level: 2
+  });
+  const result = spawnSync('python', [pyPath, testInput], { encoding: 'utf8' });
+  if (result.error) {
+    return res.json({ status: 'error', message: 'Python not available', error: result.error.message });
+  }
+  let prediction;
+  try { prediction = JSON.parse(result.stdout); } catch {
+    return res.json({ status: 'error', message: 'Could not parse Python output', stderr: result.stderr, stdout: result.stdout });
+  }
+  res.json({
+    status: prediction.ml_model_used ? 'active' : 'fallback',
+    message: prediction.ml_model_used
+      ? 'ML model loaded and scoring successfully'
+      : 'Model file exists but failed to load — using rule-based fallback',
+    modelExists, featExists,
+    test_result: {
+      risk:             prediction.risk,
+      score_percent:    prediction.score_percent,
+      ml_model_used:    prediction.ml_model_used,
+      ml_disease_prob:  prediction.ml_disease_prob,
+    },
+    stderr: result.stderr || null,
+  });
+});
+
 router.post('/', auth, async (req, res) => {
   const input  = { ...req.body, user_id: req.user.id };
   const pyPath = path.join(__dirname, '..', '..', 'ml', 'predict.py');
@@ -18,7 +63,7 @@ router.post('/', auth, async (req, res) => {
   try {
     prediction = JSON.parse(result.stdout);
   } catch {
-    return res.status(500).json({ error: 'ML parse error', detail: result.stderr });
+    return res.status(500).json({ error: 'ML parse error', detail: result.stderr, stdout: result.stdout });
   }
   if (prediction.error) return res.status(500).json(prediction);
 
