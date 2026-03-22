@@ -110,9 +110,23 @@ export default function Assessment() {
               </ul>
             </div>
 
-            {!result.ml_model_used && (
-              <div className="mt-4 flex items-center gap-2 text-xs text-slate-400">
-                <Info className="w-3 h-3" /> Results based on clinical rules. Train the ML model for AI-powered predictions.
+            {/* ML model status banner */}
+            {result.ml_model_used ? (
+              <div className="mt-4 flex items-center gap-3 rounded-xl px-4 py-3 bg-green-900/25 border border-green-700/50">
+                <Activity className="w-4 h-4 text-green-400 shrink-0" />
+                <div className="text-xs text-green-300">
+                  <span className="font-bold">ML Model Active</span> — Trained cardiovascular model scored this assessment.
+                  Raw model disease probability: <span className="font-bold text-green-200">{result.ml_disease_prob}%</span>
+                  {' '}(blended 65% ML + 35% clinical rules)
+                </div>
+              </div>
+            ) : (
+              <div className="mt-4 flex items-center gap-2 rounded-xl px-4 py-3 bg-yellow-900/20 border border-yellow-700/40">
+                <Info className="w-4 h-4 text-yellow-400 shrink-0" />
+                <p className="text-xs text-yellow-300">
+                  <span className="font-bold">Rule-based fallback</span> — ML model not found or failed to load.
+                  Train the model via <code className="bg-black/30 px-1 rounded">ml/train.py</code> to enable AI-powered predictions.
+                </p>
               </div>
             )}
 
