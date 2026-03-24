@@ -111,6 +111,7 @@ if os.path.exists(model_path):
         ml_used = False
 
 # ─── Rule-based risk engine ───────────────────────────────────────────────────
+# Gradient Boosting is the algorithm used to build sequence of decision trees. 
 def rule_score():
     score = 0.0
 
