@@ -18,7 +18,7 @@ import json
 import os
 import math
 
-# ─── Input ────────────────────────────────────────────────────────────────────
+# ─── Input 
 try:
     raw = json.loads(sys.argv[1]) if len(sys.argv) > 1 else {}
 except Exception as e:
@@ -47,7 +47,7 @@ stress_level  = g('stress_level', 3)      # 1–5 (rule-based only)
 
 bmi = weight_kg / ((height_cm / 100) ** 2) if height_cm > 0 else 25.0
 
-# ─── Feature conversion helpers ───────────────────────────────────────────────
+# ─── Feature conversion helpers 
 def chol_to_cat(mg_dl):
     """Convert cholesterol mg/dL → training categorical (1/2/3)."""
     if mg_dl < 200: return 1   # normal
@@ -69,7 +69,7 @@ gluc_cat       = gluc_to_cat(glucose)
 # class in the dataset; has minor impact on the population-level model
 gender_default = 1
 
-# ─── Try ML model first ───────────────────────────────────────────────────────
+# ─── Try ML model first 
 model_path = os.path.join(os.path.dirname(__file__), 'model', 'model.pkl')
 feat_path  = os.path.join(os.path.dirname(__file__), 'model', 'features.json')
 ml_used    = False
@@ -110,7 +110,7 @@ if os.path.exists(model_path):
     except Exception:
         ml_used = False
 
-# ─── Rule-based risk engine ───────────────────────────────────────────────────
+# ─── Rule-based risk engine 
 # Gradient Boosting is the algorithm used to build sequence of decision trees. 
 def rule_score():
     score = 0.0
@@ -170,7 +170,7 @@ if final_score >= 0.60:   risk_label = 'High'
 elif final_score >= 0.35: risk_label = 'Moderate'
 else:                     risk_label = 'Low'
 
-# ─── Personalised recommendations ─────────────────────────────────────────────
+# ─── Personalised recommendations 
 recommendations = []
 
 if bmi >= 30:
@@ -218,7 +218,7 @@ if age >= 50:
 if not recommendations:
     recommendations.append("Your health indicators look good! Maintain your healthy lifestyle — regular exercise, balanced diet, adequate sleep and routine check-ups.")
 
-# ─── Output ───────────────────────────────────────────────────────────────────
+# Output
 output = {
     "risk":            risk_label,
     "score":           round(final_score, 3),
