@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   LayoutDashboard, ClipboardList, Activity, Pill,
-  CalendarClock, FolderOpen, User, LogOut, Bell, Menu, X, HeartPulse
+  CalendarClock, FolderOpen, User, LogOut, Bell, Menu, X, HeartPulse, ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
@@ -61,6 +61,18 @@ export default function Layout({ children, title = 'Dr. Jigree' }) {
               {label}
             </Link>
           ))}
+          {user?.is_admin ? (
+            <>
+              <div className="my-2 border-t border-navy-700" />
+              <Link href="/admin"
+                className={`sidebar-link ${router.pathname.startsWith('/admin') ? 'active' : ''}`}
+                onClick={() => setOpen(false)}
+              >
+                <ShieldCheck className="w-4 h-4 flex-shrink-0 text-violet-400" />
+                Admin Panel
+              </Link>
+            </>
+          ) : null}
         </nav>
 
         {/* User section */}
@@ -71,7 +83,10 @@ export default function Layout({ children, title = 'Dr. Jigree' }) {
                 {user.full_name?.charAt(0).toUpperCase()}
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold text-slate-200 truncate">{user.full_name}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="text-sm font-semibold text-slate-200 truncate">{user.full_name}</p>
+                  {user.is_admin ? <ShieldCheck className="w-3.5 h-3.5 text-violet-400 shrink-0" title="Admin" /> : null}
+                </div>
                 <p className="text-xs text-slate-500 truncate">{user.email}</p>
               </div>
             </div>

@@ -10,5 +10,7 @@ module.exports = `CREATE TABLE IF NOT EXISTS users (
   address           TEXT,
   emergency_contact TEXT,
   profile_picture   TEXT,
+  is_admin          INTEGER  DEFAULT 0,
+  is_active         INTEGER  DEFAULT 1,
   created_at        DATETIME DEFAULT CURRENT_TIMESTAMP
 )`;

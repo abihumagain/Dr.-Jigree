@@ -25,8 +25,8 @@ router.post('/signup', async (req, res) => {
       `INSERT INTO notifications (user_id, message, type) VALUES (?, ?, ?)`,
       [lastID, `Welcome to Dr. Jigree, ${full_name}! Start by completing your health assessment.`, 'welcome']
     );
-    const token = jwt.sign({ id: lastID, email }, JWT_SECRET, { expiresIn: '7d' });
-    res.status(201).json({ token, user: { id: lastID, full_name, email } });
+    const token = jwt.sign({ id: lastID, email, is_admin: 0 }, JWT_SECRET, { expiresIn: '7d' });
+    res.status(201).json({ token, user: { id: lastID, full_name, email, is_admin: 0, is_active: 1 } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -42,9 +42,10 @@ router.post('/login', async (req, res) => {
     const database = await db;
     const user = await database.get('SELECT * FROM users WHERE email = ?', [email]);
     if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+    if (!user.is_active) return res.status(403).json({ error: 'Account suspended. Contact an administrator.' });
     const ok = await bcrypt.compare(password, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-    const token = jwt.sign({ id: user.id, email: user.email }, JWT_SECRET, { expiresIn: '7d' });
+    const token = jwt.sign({ id: user.id, email: user.email, is_admin: user.is_admin || 0 }, JWT_SECRET, { expiresIn: '7d' });
     const { password_hash, ...safeUser } = user;
     res.json({ token, user: safeUser });
   } catch (err) {
