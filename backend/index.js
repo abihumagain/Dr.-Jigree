@@ -15,6 +15,7 @@ const documentsRoutes     = require('./routes/documents');
 const notificationsRoutes = require('./routes/notifications');
 const dashboardRoutes     = require('./routes/dashboard');
 const adminRoutes         = require('./routes/admin');
+const workoutsRoutes      = require('./routes/workouts');
 
 const app = express();
 
@@ -40,6 +41,7 @@ app.use('/api/documents',     documentsRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/dashboard',     dashboardRoutes);
 app.use('/api/admin',         adminRoutes);
+app.use('/api/workouts',      workoutsRoutes);
 
 app.listen(PORT, () => console.log(`✅  Dr. Jigree backend running on http://localhost:${PORT}`));
 

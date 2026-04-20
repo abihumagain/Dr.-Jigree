@@ -3,6 +3,8 @@ const path    = require('path');
 const sqlite3 = require('sqlite3');
 
 // ── Per-table schema files ────────────────────────────────
+const workoutSchemas = require('./schema/workouts');
+
 const schemas = [
   require('./schema/users'),
   require('./schema/health-records'),
@@ -11,6 +13,7 @@ const schemas = [
   require('./schema/appointments'),
   require('./schema/documents'),
   require('./schema/notifications'),
+  ...workoutSchemas,
 ];
 
 const dataDir = path.join(__dirname, 'data');

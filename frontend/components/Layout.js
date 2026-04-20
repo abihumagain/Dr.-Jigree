@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import {
   LayoutDashboard, ClipboardList, Activity, Pill,
-  CalendarClock, FolderOpen, User, LogOut, Bell, Menu, X, HeartPulse, ShieldCheck
+  CalendarClock, FolderOpen, User, LogOut, Bell, Menu, X, HeartPulse, ShieldCheck, Dumbbell
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useState } from 'react';
@@ -13,6 +13,7 @@ const NAV = [
   { href: '/records',      label: 'Health Records',  icon: ClipboardList },
   { href: '/medications',  label: 'Medications',     icon: Pill },
   { href: '/appointments', label: 'Appointments',    icon: CalendarClock },
+  { href: '/workouts',     label: 'Workout Plan',    icon: Dumbbell },
   { href: '/documents',    label: 'Documents',       icon: FolderOpen },
   { href: '/profile',      label: 'My Profile',      icon: User },
 ];
