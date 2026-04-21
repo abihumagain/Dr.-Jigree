@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useAdminStats } from '@/controllers/useAdmin';
+import { fmtDate } from '@/lib/date';
 import { Loader2, Users, Activity, Pill, CalendarClock, FileText, ClipboardList, ShieldCheck, TrendingUp } from 'lucide-react';
 
 function StatCard({ icon: Icon, label, value, sub, color, href }) {
@@ -95,7 +96,7 @@ export default function AdminDashboard() {
                         ? <span className="bg-violet-500/20 text-violet-300 text-xs px-2 py-0.5 rounded-full">Admin</span>
                         : <span className="bg-navy-600 text-slate-400 text-xs px-2 py-0.5 rounded-full">User</span>}
                     </td>
-                    <td className="py-2 text-slate-400">{new Date(u.created_at).toLocaleDateString()}</td>
+                    <td className="py-2 text-slate-400">{fmtDate(u.created_at)}</td>
                   </tr>
                 ))}
               </tbody>

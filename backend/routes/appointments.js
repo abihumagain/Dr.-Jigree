@@ -27,6 +27,10 @@ router.post('/', auth, async (req, res) => {
     [req.user.id, title, doctor_name, specialty, location, appointment_date, appointment_time, notes]
   );
   const appt = await database.get('SELECT * FROM appointments WHERE id=?', [lastID]);
+  await database.run(
+    `INSERT INTO notifications (user_id, message, type) VALUES (?,?,?)`,
+    [req.user.id, `Appointment scheduled: "${title}"${doctor_name ? ' with ' + doctor_name : ''} on ${appointment_date}.`, 'info']
+  );
   res.status(201).json(appt);
 });
 
@@ -43,6 +47,13 @@ router.put('/:id', auth, async (req, res) => {
      status, notes, req.params.id, req.user.id]
   );
   const appt = await database.get('SELECT * FROM appointments WHERE id=?', [req.params.id]);
+  if (status) {
+    const statusLabels = { completed: 'marked as completed', cancelled: 'cancelled', scheduled: 'rescheduled' };
+    await database.run(
+      `INSERT INTO notifications (user_id, message, type) VALUES (?,?,?)`,
+      [req.user.id, `Appointment "${title}" ${statusLabels[status] || 'updated'}.`, 'info']
+    );
+  }
   res.json(appt);
 });
 

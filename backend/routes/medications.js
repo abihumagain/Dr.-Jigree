@@ -25,6 +25,10 @@ router.post('/', auth, async (req, res) => {
     [req.user.id, name, dosage, frequency, start_date, end_date, prescriber, notes]
   );
   const med = await database.get('SELECT * FROM medications WHERE id=?', [lastID]);
+  await database.run(
+    `INSERT INTO notifications (user_id, message, type) VALUES (?,?,?)`,
+    [req.user.id, `Medication added: ${name}${dosage ? ' — ' + dosage : ''}${frequency ? ', ' + frequency : ''}.`, 'info']
+  );
   res.status(201).json(med);
 });
 
@@ -39,6 +43,13 @@ router.put('/:id', auth, async (req, res) => {
     [name, dosage, frequency, start_date, end_date, prescriber, notes, active, req.params.id, req.user.id]
   );
   const med = await database.get('SELECT * FROM medications WHERE id=?', [req.params.id]);
+  if (active !== undefined) {
+    const statusMsg = active ? 'reactivated' : 'marked inactive';
+    await database.run(
+      `INSERT INTO notifications (user_id, message, type) VALUES (?,?,?)`,
+      [req.user.id, `Medication "${name}" ${statusMsg}.`, 'info']
+    );
+  }
   res.json(med);
 });
 

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { useAdminUsers } from '@/controllers/useAdmin';
+import { fmtDate } from '@/lib/date';
 import {
   Loader2, ShieldCheck, ShieldOff, UserX, UserCheck,
   Eye, KeyRound, Trash2, Search, Users
@@ -82,14 +83,17 @@ export default function AdminUsers() {
                       <Link href={`/admin/users/${u.id}`} className="font-medium text-brand-400 hover:underline block">{u.full_name}</Link>
                       <span className="text-slate-400 text-xs">{u.email}</span>
                     </td>
-                    <td className="px-4 py-3 text-slate-400">{new Date(u.created_at).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-slate-400">{fmtDate(u.created_at)}</td>
                     <td className="px-4 py-3 text-center">{u.assessment_count}</td>
                     <td className="px-4 py-3 text-center">{u.medication_count}</td>
                     <td className="px-4 py-3 text-center">{u.appointment_count}</td>
                     <td className="px-4 py-3 text-center">
-                      {u.latest_risk
-                        ? <span className={u.latest_risk === 'High' ? 'badge-high' : u.latest_risk === 'Moderate' ? 'badge-moderate' : 'badge-low'}>{u.latest_risk}</span>
-                        : <span className="text-slate-500 text-xs">—</span>}
+                      {(() => {
+                        const r = u.latest_risk?.trim();
+                        if (!r) return <span className="text-slate-500 text-xs">—</span>;
+                        const cls = r.toLowerCase() === 'high' ? 'badge-high' : r.toLowerCase() === 'moderate' ? 'badge-moderate' : 'badge-low';
+                        return <span className={cls}>{r}</span>;
+                      })()}
                     </td>
                     <td className="px-4 py-3 text-center">
                       {u.is_active

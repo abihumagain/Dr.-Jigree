@@ -306,9 +306,9 @@ router.post('/generate', auth, async (req, res) => {
 
   // Notification
   await database.run(
-    `INSERT INTO notifications (user_id, title, message) VALUES (?,?,?)`,
-    [req.user.id, 'Workout Plan Created',
-     `Your ${goal} plan has been generated — ${days_per_week} days/week for ${timeline_weeks} weeks.`]
+    `INSERT INTO notifications (user_id, message) VALUES (?,?)`,
+    [req.user.id,
+     `Workout Plan Created: Your ${goal} plan has been generated — ${days_per_week} days/week for ${timeline_weeks} weeks.`]
   );
 
   const plan = await database.get('SELECT * FROM workout_plans WHERE id=?', [lastID]);

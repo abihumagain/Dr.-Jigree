@@ -34,6 +34,10 @@ router.post('/', auth, upload.single('file'), async (req, res) => {
     ]
   );
   const doc = await database.get('SELECT * FROM documents WHERE id=?', [lastID]);
+  await database.run(
+    `INSERT INTO notifications (user_id, message, type) VALUES (?,?,?)`,
+    [req.user.id, `Document uploaded: "${doc.title}" (${doc_type}).`, 'info']
+  );
   res.status(201).json(doc);
 });
 

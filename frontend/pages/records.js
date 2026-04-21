@@ -1,5 +1,6 @@
 import Layout from '@/components/Layout';
 import { useRecords } from '@/controllers/useRecords';
+import { fmtDateTime } from '@/lib/date';
 import { Plus, Trash2, X, Loader2, Activity, FlaskConical } from 'lucide-react';
 
 export default function Records() {
@@ -51,7 +52,7 @@ export default function Records() {
                     </div>
                     <div>
                       <p className="font-semibold text-slate-100">{r.title}</p>
-                      <p className="text-xs text-slate-400">{new Date(r.recorded_at).toLocaleString()}</p>
+                      <p className="text-xs text-slate-400">{fmtDateTime(r.recorded_at)}</p>
                     </div>
                   </div>
                   <button onClick={() => del(r.id)} className="text-slate-300 hover:text-red-500 transition">

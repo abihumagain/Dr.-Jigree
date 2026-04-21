@@ -32,6 +32,10 @@ router.post('/', auth, async (req, res) => {
      oxygen_sat, glucose, cholesterol, hdl, ldl, triglycerides, hba1c, notes]
   );
   const record = await database.get('SELECT * FROM health_records WHERE id=?', [lastID]);
+  await database.run(
+    `INSERT INTO notifications (user_id, message, type) VALUES (?,?,?)`,
+    [req.user.id, `Health record logged: "${title}" (${record_type}).`, 'info']
+  );
   res.status(201).json(record);
 });
 

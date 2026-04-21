@@ -1,5 +1,6 @@
 import Layout from '@/components/Layout';
 import { useNotifications } from '@/controllers/useNotifications';
+import { fmtDateTime } from '@/lib/date';
 import { Bell, CheckCheck, Info, AlertTriangle, CheckCircle2, Gift } from 'lucide-react';
 
 const TYPE_ICONS = {
@@ -62,7 +63,7 @@ export default function Notifications() {
                     <Icon className={`w-5 h-5 shrink-0 mt-0.5 ${icol}`} />
                     <div className="flex-1">
                       <p className={`text-sm ${!n.read ? 'font-medium text-slate-100' : 'text-slate-400'}`}>{n.message}</p>
-                      <p className="text-xs text-slate-400 mt-1">{new Date(n.created_at).toLocaleString()}</p>
+                      <p className="text-xs text-slate-400 mt-1">{fmtDateTime(n.created_at)}</p>
                     </div>
                     {!n.read && <div className="w-2.5 h-2.5 rounded-full bg-brand-400 shrink-0 mt-1" />}
                   </div>

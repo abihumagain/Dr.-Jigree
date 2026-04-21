@@ -5,7 +5,7 @@ import {
   CalendarClock, FolderOpen, User, LogOut, Bell, Menu, X, HeartPulse, ShieldCheck, Dumbbell
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const NAV = [
   { href: '/dashboard',    label: 'Dashboard',      icon: LayoutDashboard },
@@ -22,6 +22,22 @@ export default function Layout({ children, title = 'Dr. Jigree' }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [adminToken, setAdminToken] = useState(null);
+
+  useEffect(() => {
+    setAdminToken(localStorage.getItem('drjigree_admin_token'));
+  }, []);
+
+  const stopImpersonating = () => {
+    const tok  = localStorage.getItem('drjigree_admin_token');
+    const usr  = localStorage.getItem('drjigree_admin_user');
+    if (!tok || !usr) return;
+    localStorage.setItem('drjigree_token', tok);
+    localStorage.setItem('drjigree_user',  usr);
+    localStorage.removeItem('drjigree_admin_token');
+    localStorage.removeItem('drjigree_admin_user');
+    window.location.href = '/admin/users';
+  };
 
   return (
     <div className="flex h-screen bg-navy-900 overflow-hidden">
@@ -116,6 +132,20 @@ export default function Layout({ children, title = 'Dr. Jigree' }) {
             </div>
           </Link>
         </header>
+
+        {/* Impersonation banner */}
+        {adminToken && (
+          <div className="bg-violet-600/20 border-b border-violet-500/40 px-4 py-2 flex items-center justify-between text-sm shrink-0">
+            <span className="text-violet-300 flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4" />
+              Viewing as <strong className="text-white">{user?.full_name}</strong> — admin impersonation active
+            </span>
+            <button onClick={stopImpersonating}
+              className="bg-violet-500 hover:bg-violet-400 text-white text-xs font-medium px-3 py-1 rounded-lg transition">
+              Stop Impersonating
+            </button>
+          </div>
+        )}
 
         {/* Page */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">

@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import { useDashboard } from '@/controllers/useDashboard';
+import { fmtDate } from '@/lib/date';
 import {
   Activity, Pill, CalendarClock, ClipboardList,
   TrendingUp, AlertTriangle, CheckCircle, ChevronRight, Plus
@@ -78,7 +79,7 @@ export default function Dashboard() {
             <>
               <RiskGauge score={risk.risk_score} label={risk.risk_label} />
               <p className="text-xs text-slate-400 mt-1">
-                Last assessed: {new Date(risk.assessed_at).toLocaleDateString()}
+                Last assessed: {fmtDate(risk.assessed_at)}
               </p>
             </>
           ) : (
@@ -120,7 +121,7 @@ export default function Dashboard() {
                 <li key={r.id} className="flex items-center gap-3 text-sm">
                   <div className="w-2 h-2 rounded-full bg-brand-400 shrink-0" />
                   <span className="flex-1 truncate text-slate-300">{r.title}</span>
-                  <span className="text-xs text-slate-500">{new Date(r.recorded_at).toLocaleDateString()}</span>
+                  <span className="text-xs text-slate-500">{fmtDate(r.recorded_at)}</span>
                 </li>
               ))}
             </ul>

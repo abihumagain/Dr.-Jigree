@@ -86,6 +86,12 @@ router.post('/', auth, async (req, res) => {
       prediction.score, prediction.risk, JSON.stringify(prediction.recommendations),
     ]
   );
+  await database.run(
+    `INSERT INTO notifications (user_id, message, type) VALUES (?,?,?)`,
+    [req.user.id,
+     `Health assessment completed — Risk: ${prediction.risk} (${(prediction.score * 100).toFixed(1)}%)${bmi ? ', BMI: ' + bmi : ''}.`,
+     'info']
+  );
   res.json({ id: lastID, bmi, ...prediction });
 });
 

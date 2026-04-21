@@ -1,6 +1,7 @@
 import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { useAdminUserDetail } from '@/controllers/useAdmin';
+import { fmtDate, fmtDateTime } from '@/lib/date';
 import {
   ArrowLeft, ShieldCheck, ShieldOff, UserX, UserCheck,
   KeyRound, Loader2, AlertCircle, ClipboardList, Pill,
@@ -47,7 +48,7 @@ export default function AdminUserDetail() {
 
   if (!detail) return null;
 
-  const u = detail.profile;
+  const u = detail.user;
 
   return (
     <div className="min-h-screen bg-navy-950 text-slate-100">
@@ -89,7 +90,7 @@ export default function AdminUserDetail() {
                 </div>
                 <p className="text-slate-400 text-sm">{u.email}</p>
                 <p className="text-slate-500 text-xs mt-1">
-                  Joined {new Date(u.created_at).toLocaleDateString()}
+                  Joined {fmtDate(u.created_at)}
                   {u.phone && ` · ${u.phone}`}
                   {u.blood_type && ` · Blood: ${u.blood_type}`}
                   {u.gender && ` · ${u.gender}`}
@@ -144,9 +145,9 @@ export default function AdminUserDetail() {
                 <tbody>
                   {detail.assessments.map((a, i) => (
                     <tr key={i} className="border-b border-navy-700/50 hover:bg-navy-700/20">
-                      <td className="px-4 py-3 text-slate-300">{new Date(a.created_at).toLocaleDateString()}</td>
-                      <td className="px-4 py-3"><RiskBadge level={a.risk_level} /></td>
-                      <td className="px-4 py-3">{a.risk_score?.toFixed ? a.risk_score.toFixed(1) : a.risk_score ?? '—'}%</td>
+                      <td className="px-4 py-3 text-slate-300">{fmtDate(a.assessed_at || a.created_at)}</td>
+                      <td className="px-4 py-3"><RiskBadge level={a.risk_label} /></td>
+                      <td className="px-4 py-3">{a.risk_score != null ? (a.risk_score * 100).toFixed(1) : '—'}%</td>
                       <td className="px-4 py-3">{a.age ?? '—'}</td>
                       <td className="px-4 py-3">{a.systolic_bp && a.diastolic_bp ? `${a.systolic_bp}/${a.diastolic_bp}` : '—'}</td>
                       <td className="px-4 py-3">{a.cholesterol ?? '—'}</td>
@@ -173,11 +174,11 @@ export default function AdminUserDetail() {
                 <tbody>
                   {detail.medications.map((m, i) => (
                     <tr key={i} className="border-b border-navy-700/50 hover:bg-navy-700/20">
-                      <td className="px-4 py-3 font-medium">{m.medication_name}</td>
+                      <td className="px-4 py-3 font-medium">{m.name}</td>
                       <td className="px-4 py-3 text-slate-400">{m.dosage ?? '—'}</td>
                       <td className="px-4 py-3 text-slate-400">{m.frequency ?? '—'}</td>
-                      <td className="px-4 py-3 text-slate-400">{m.start_date ? new Date(m.start_date).toLocaleDateString() : '—'}</td>
-                      <td className="px-4 py-3 text-slate-400">{m.end_date ? new Date(m.end_date).toLocaleDateString() : 'Ongoing'}</td>
+                      <td className="px-4 py-3 text-slate-400">{m.start_date ? fmtDate(m.start_date) : '—'}</td>
+                      <td className="px-4 py-3 text-slate-400">{m.end_date ? fmtDate(m.end_date) : 'Ongoing'}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${m.is_active ? 'bg-green-900/30 text-green-400' : 'bg-navy-600 text-slate-400'}`}>
                           {m.is_active ? 'Active' : 'Inactive'}
@@ -207,7 +208,7 @@ export default function AdminUserDetail() {
                     <tr key={i} className="border-b border-navy-700/50 hover:bg-navy-700/20">
                       <td className="px-4 py-3 font-medium">{a.title}</td>
                       <td className="px-4 py-3 text-slate-400">{a.doctor_name ?? '—'}</td>
-                      <td className="px-4 py-3 text-slate-400">{a.appointment_date ? new Date(a.appointment_date).toLocaleDateString() : '—'}</td>
+                      <td className="px-4 py-3 text-slate-400">{a.appointment_date ? fmtDate(a.appointment_date + 'T00:00:00') : '—'}</td>
                       <td className="px-4 py-3 text-slate-400">{a.appointment_type ?? '—'}</td>
                       <td className="px-4 py-3">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${
@@ -239,7 +240,7 @@ export default function AdminUserDetail() {
                 <tbody>
                   {detail.records.map((r, i) => (
                     <tr key={i} className="border-b border-navy-700/50 hover:bg-navy-700/20">
-                      <td className="px-4 py-3 text-slate-300">{new Date(r.recorded_at || r.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-slate-300">{fmtDate(r.recorded_at || r.created_at)}</td>
                       <td className="px-4 py-3 text-slate-400">{r.systolic_bp && r.diastolic_bp ? `${r.systolic_bp}/${r.diastolic_bp}` : '—'}</td>
                       <td className="px-4 py-3 text-slate-400">{r.heart_rate ? `${r.heart_rate} bpm` : '—'}</td>
                       <td className="px-4 py-3 text-slate-400">{r.weight ? `${r.weight} kg` : '—'}</td>
@@ -269,7 +270,7 @@ export default function AdminUserDetail() {
                       <td className="px-4 py-3 font-medium">{d.original_name ?? d.file_name}</td>
                       <td className="px-4 py-3 text-slate-400">{d.file_type ?? '—'}</td>
                       <td className="px-4 py-3 text-slate-400">{d.file_size ? `${Math.round(d.file_size / 1024)} KB` : '—'}</td>
-                      <td className="px-4 py-3 text-slate-400">{new Date(d.uploaded_at || d.created_at).toLocaleDateString()}</td>
+                      <td className="px-4 py-3 text-slate-400">{fmtDate(d.uploaded_at || d.created_at)}</td>
                     </tr>
                   ))}
                 </tbody>

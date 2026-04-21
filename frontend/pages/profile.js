@@ -1,5 +1,6 @@
 import Layout from '@/components/Layout';
 import { useProfile } from '@/controllers/useProfile';
+import { fmtDate } from '@/lib/date';
 import { Loader2, Camera, Save, HeartPulse } from 'lucide-react';
 
 const BLOOD_TYPES = ['A+','A-','B+','B-','O+','O-','AB+','AB-'];
@@ -41,7 +42,7 @@ export default function Profile() {
               </div>
               <p className="font-bold text-slate-100">{form.full_name}</p>
               <p className="text-sm text-slate-400">{form.email}</p>
-              <p className="text-xs text-slate-500 mt-1">Member since {new Date(form.created_at).toLocaleDateString()}</p>
+              <p className="text-xs text-slate-500 mt-1">Member since {fmtDate(form.created_at)}</p>
             </div>
 
             <div className="card">

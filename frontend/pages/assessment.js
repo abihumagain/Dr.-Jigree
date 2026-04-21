@@ -1,5 +1,6 @@
 import Layout from '@/components/Layout';
 import { useAssessment, STEPS } from '@/controllers/useAssessment';
+import { fmtDate } from '@/lib/date';
 import {
   ChevronRight, ChevronLeft, Loader2, CheckCircle2, AlertTriangle,
   Activity, TrendingUp, Info, RefreshCw
@@ -228,7 +229,7 @@ export default function Assessment() {
                 <tbody>
                   {history.map(h => (
                     <tr key={h.id} className="border-b border-navy-700/50 hover:bg-navy-700">
-                      <td className="py-2 text-slate-400">{new Date(h.assessed_at).toLocaleDateString()}</td>
+                      <td className="py-2 text-slate-400">{fmtDate(h.assessed_at)}</td>
                       <td className="py-2">
                         <span className={h.risk_label === 'High' ? 'badge-high' : h.risk_label === 'Moderate' ? 'badge-moderate' : 'badge-low'}>
                           {h.risk_label}

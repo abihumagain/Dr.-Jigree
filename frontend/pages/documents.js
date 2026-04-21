@@ -1,5 +1,6 @@
 import Layout from '@/components/Layout';
 import { useDocuments } from '@/controllers/useDocuments';
+import { fmtDate } from '@/lib/date';
 import { Upload, Trash2, X, Loader2, FolderOpen, FileText, Image, FilePlus2 } from 'lucide-react';
 
 const DOC_TYPES = ['report', 'prescription', 'image', 'other'];
@@ -52,7 +53,7 @@ export default function Documents() {
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-slate-200 truncate">{d.title}</p>
                     <p className="text-xs text-slate-400">{d.file_name} · {fmtSize(d.file_size || 0)}</p>
-                    <p className="text-xs text-slate-400">{new Date(d.uploaded_at).toLocaleDateString()}</p>
+                    <p className="text-xs text-slate-400">{fmtDate(d.uploaded_at)}</p>
                   </div>
                   <div className="flex gap-2 shrink-0">
                     <a href={d.file_path} target="_blank" rel="noreferrer"

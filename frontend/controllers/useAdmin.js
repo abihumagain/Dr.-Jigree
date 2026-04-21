@@ -65,9 +65,11 @@ export function useAdminUsers() {
     localStorage.setItem('drjigree_admin_token', localStorage.getItem('drjigree_token'));
     localStorage.setItem('drjigree_admin_user',  localStorage.getItem('drjigree_user'));
     localStorage.setItem('drjigree_token', token);
-    localStorage.setItem('drjigree_user',  JSON.stringify(u));
+    // Ensure is_admin is explicitly false so guards work after reload
+    localStorage.setItem('drjigree_user',  JSON.stringify({ ...u, is_admin: 0 }));
     toast.success(`Viewing app as ${u.full_name}`);
-    router.push('/dashboard');
+    // Full page reload so AuthContext re-reads localStorage (router.push keeps stale state)
+    window.location.href = '/dashboard';
   };
 
   const shown = users.filter(u => {
@@ -109,9 +111,10 @@ export function useAdminUserDetail(id) {
   };
 
   const doPromote = async () => {
-    const updated = await updateAdminUser(id, { is_admin: 1 });
+    const current = detail?.user?.is_admin;
+    const updated = await updateAdminUser(id, { is_admin: current ? 0 : 1 });
     setDetail(d => ({ ...d, user: { ...d.user, ...updated } }));
-    toast.success('User promoted to admin');
+    toast.success(current ? 'Admin rights removed' : 'User promoted to admin');
   };
 
   const doSuspend = async () => {

@@ -67,6 +67,12 @@ router.get('/users/:id', adminAuth, async (req, res) => {
 // PUT /api/admin/users/:id  — update role / active status / basic info
 router.put('/users/:id', adminAuth, async (req, res) => {
   const { is_admin, is_active, full_name, email } = req.body;
+
+  // Prevent admin from removing their own admin rights
+  if (is_admin === 0 && Number(req.params.id) === req.user.id) {
+    return res.status(400).json({ error: 'You cannot remove your own admin rights' });
+  }
+
   const database = await db;
   const user = await database.get('SELECT id FROM users WHERE id = ?', [req.params.id]);
   if (!user) return res.status(404).json({ error: 'User not found' });
