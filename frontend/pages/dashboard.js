@@ -4,7 +4,7 @@ import { useDashboard } from '@/controllers/useDashboard';
 import { fmtDate } from '@/lib/date';
 import {
   Activity, Pill, CalendarClock, ClipboardList,
-  TrendingUp, AlertTriangle, CheckCircle, ChevronRight, Plus
+  TrendingUp, AlertTriangle, CheckCircle, ChevronRight, Plus, FileDown, Loader2
 } from 'lucide-react';
 
 function RiskGauge({ score = 0, label = 'Unknown' }) {
@@ -48,7 +48,7 @@ function StatCard({ icon: Icon, label, value, color, href }) {
 }
 
 export default function Dashboard() {
-  const { data, loading, user } = useDashboard();
+  const { data, loading, user, exporting, exportPdf } = useDashboard();
 
   if (loading) return (
     <Layout title="Dashboard">
@@ -63,11 +63,22 @@ export default function Dashboard() {
   return (
     <Layout title="Dashboard">
       {/* Welcome */}
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-100">
-          Good day, {user?.full_name?.split(' ')[0]} 👋
-        </h2>
-        <p className="text-slate-400 text-sm mt-1">Here&apos;s your health summary</p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-100">
+            Good day, {user?.full_name?.split(' ')[0]} 👋
+          </h2>
+          <p className="text-slate-400 text-sm mt-1">Here&apos;s your health summary</p>
+        </div>
+        <button
+          onClick={exportPdf}
+          disabled={exporting || loading}
+          className="flex items-center gap-2 bg-brand-500 hover:bg-brand-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold px-4 py-2 rounded-lg transition shrink-0"
+        >
+          {exporting
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Generating…</>
+            : <><FileDown className="w-4 h-4" /> Export PDF</>}
+        </button>
       </div>
 
       {/* Risk + Stats grid */}
